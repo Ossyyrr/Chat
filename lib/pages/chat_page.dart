@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat/widgets/char_message.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -10,9 +11,13 @@ class ChatPage extends StatefulWidget {
   State<ChatPage> createState() => _ChatPageState();
 }
 
-class _ChatPageState extends State<ChatPage> {
+class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
   final _textController = TextEditingController();
   final _focusNode = FocusNode();
+  bool _estaEscribiendo = false;
+
+  List<ChatMessage> _messages = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,7 +51,8 @@ class _ChatPageState extends State<ChatPage> {
               Flexible(
                 child: ListView.builder(
                   physics: BouncingScrollPhysics(),
-                  itemBuilder: (_, i) => Text(i.toString()),
+                  itemBuilder: (_, i) => _messages[i],
+                  itemCount: _messages.length,
                   reverse: true,
                 ),
               ),
@@ -71,7 +77,13 @@ class _ChatPageState extends State<ChatPage> {
                 controller: _textController,
                 onSubmitted: _handrleSubmit,
                 onChanged: (String texto) {
-                  // TODO
+                  setState(() {
+                    if (texto.trim().length > 0) {
+                      _estaEscribiendo = true;
+                    } else {
+                      _estaEscribiendo = false;
+                    }
+                  });
                 },
                 decoration:
                     InputDecoration.collapsed(hintText: 'Enviar mensaje'),
@@ -83,16 +95,24 @@ class _ChatPageState extends State<ChatPage> {
               child: Platform.isIOS
                   ? CupertinoButton(
                       child: Text('Enviar'),
-                      onPressed: () {},
+                      onPressed: _estaEscribiendo
+                          ? () => _handrleSubmit(_textController.text.trim())
+                          : null,
                     )
                   : Container(
                       margin: EdgeInsets.symmetric(horizontal: 4),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.send,
-                          color: Colors.blue[400],
+                      child: IconTheme(
+                        // IconTheme para cambiar el color por defecto del icono, de este modo al estar deshabilitado queda gris y al habilitarse queda blue[400]
+                        data: IconThemeData(color: Colors.blue[400]),
+                        child: IconButton(
+                          highlightColor: Colors.transparent,
+                          splashColor: Colors.transparent,
+                          icon: Icon(Icons.send),
+                          onPressed: _estaEscribiendo
+                              ? () =>
+                                  _handrleSubmit(_textController.text.trim())
+                              : null,
                         ),
-                        onPressed: () {},
                       ),
                     ),
             )
@@ -103,8 +123,20 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   void _handrleSubmit(String texto) {
-    print(texto);
+    if (texto.isEmpty) return;
     _focusNode.requestFocus();
     _textController.clear();
+
+    final newMessage = ChatMessage(
+      texto: texto,
+      uid: '123',
+      animationController: AnimationController(
+          vsync: this, duration: Duration(milliseconds: 300)),
+    );
+    _messages.insert(0, newMessage);
+    newMessage.animationController.forward();
+    setState(() {
+      _estaEscribiendo = false;
+    });
   }
 }
