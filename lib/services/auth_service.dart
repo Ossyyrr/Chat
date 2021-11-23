@@ -8,8 +8,16 @@ import 'package:http/http.dart' as http;
 
 class AuthService with ChangeNotifier {
   late Usuario usuario;
+  bool _autenticando = false;
+  bool get autenticando => _autenticando;
+  set autenticando(bool valor) {
+    _autenticando = valor;
+    notifyListeners();
+  }
 
-  Future login(String email, String password) async {
+  Future<bool> login(String email, String password) async {
+    autenticando = true;
+
     final data = {
       "email": email,
       'password': password,
@@ -18,20 +26,21 @@ class AuthService with ChangeNotifier {
     // ! Solo funciona en simulador
 
     var uri = Uri.parse('${Enviroment.apiUrl}/login/');
-    try {
-      final resp = await http.post(uri,
-          body: jsonEncode(data),
-          headers: {'Content-Type': 'application/json'});
-      print('resp.body *************  en emulador funciona');
-      print(resp.body);
+    final resp = await http.post(uri,
+        body: jsonEncode(data), headers: {'Content-Type': 'application/json'});
+    print('resp.body *************  en emulador funciona');
+    print(resp.body);
 
-      if (resp.statusCode == 200) {
-        final loginResponse = loginResponseFromJson(resp.body);
-        usuario = loginResponse.usuario;
-      }
-    } catch (e) {
-      print('ERROR: ');
-      print(e);
+    autenticando = false;
+    if (resp.statusCode == 200) {
+      final loginResponse = loginResponseFromJson(resp.body);
+      usuario = loginResponse.usuario;
+
+// TODO Guardar token
+
+      return true;
+    } else {
+      return false;
     }
   }
 }
