@@ -1,24 +1,36 @@
 import 'package:flutter/material.dart';
 
 class BotonAzul extends StatelessWidget {
-  const BotonAzul({Key? key, required this.onPressed, required this.text})
-      : super(key: key);
-  final void Function()? onPressed;
+
   final String text;
+  final Function onPressed;
+
+  const BotonAzul({
+    Key? key, 
+    required this.text, 
+    required this.onPressed
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-        onPressed: onPressed,
-        style: ButtonStyle(
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18.0),
-        ))),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(text),
-          ],
-        ));
+      style: ButtonStyle(
+        elevation: MaterialStateProperty.all(2),
+        shape: MaterialStateProperty.all(StadiumBorder())
+      ),
+        // elevation: 2,
+        // highlightElevation: 5,
+        // color: Colors.blue,
+        // shape: StadiumBorder(),
+        onPressed: () => this.onPressed(),
+        child: Container(
+          width: double.infinity,
+          height: 55,
+          child: Center(
+            child: Text( this.text , style: TextStyle( color: Colors.white, fontSize: 17 )),
+          ),
+        ),
+    );
   }
+
 }
