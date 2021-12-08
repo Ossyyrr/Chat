@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:chat/models/mensajes_response.dart';
 import 'package:chat/services/auth_service.dart';
 import 'package:chat/services/chat_service.dart';
 import 'package:chat/services/socket_service.dart';
@@ -29,6 +30,24 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     authService = Provider.of<AuthService>(context, listen: false);
 
     socketService.socket.on('mensaje-personal', _escucharMensaje);
+    _cargarHistorial(chatService.usuarioPara.uid);
+  }
+
+  void _cargarHistorial(String usuarioId) async {
+    List<Mensaje> chat = await chatService.getChat(usuarioId);
+
+    print(chat);
+
+    final history = chat.map((m) => ChatMessage(
+        texto: m.mensaje!,
+        uid: m.de!,
+        animationController: AnimationController(
+            vsync: this, duration: Duration(milliseconds: 0))
+          ..forward()));
+
+    setState(() {
+      _messages.insertAll(0, history);
+    });
   }
 
   void _escucharMensaje(dynamic payload) {
@@ -82,10 +101,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
               itemBuilder: (_, i) => _messages[i],
               reverse: true,
             )),
-
             Divider(height: 1),
-
-            // TODO: Caja de texto
             Container(
               color: Colors.white,
               child: _inputChat(),
@@ -156,7 +172,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     _focusNode.requestFocus();
 
     final newMessage = new ChatMessage(
-      uid: '123',
+      uid: authService.usuario!.uid,
       texto: texto,
       animationController: AnimationController(
           vsync: this, duration: Duration(milliseconds: 200)),
@@ -177,12 +193,10 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    //TODO: Off del socket
-
     for (ChatMessage message in _messages) {
       message.animationController.dispose();
     }
-
+    socketService.socket.off('mensaje-personal');
     super.dispose();
   }
 }
