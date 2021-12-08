@@ -31,8 +31,18 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin {
     socketService.socket.on('mensaje-personal', _escucharMensaje);
   }
 
-  void _escucharMensaje(dynamic data) {
+  void _escucharMensaje(dynamic payload) {
     //print('tengo mensaje! $data');
+
+    ChatMessage message = ChatMessage(
+        texto: payload['mensaje'],
+        uid: payload['de'],
+        animationController: AnimationController(
+            vsync: this, duration: Duration(milliseconds: 300)));
+    setState(() {
+      _messages.insert(0, message);
+    });
+    message.animationController.forward();
   }
 
   List<ChatMessage> _messages = [];
