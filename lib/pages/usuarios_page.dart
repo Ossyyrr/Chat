@@ -1,5 +1,6 @@
 import 'package:chat/models/usuario.dart';
 import 'package:chat/services/auth_service.dart';
+import 'package:chat/services/chat_service.dart';
 import 'package:chat/services/socket_service.dart';
 import 'package:chat/services/usuarios_service.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +18,6 @@ class _UsuariosPageState extends State<UsuariosPage> {
       RefreshController(initialRefresh: false);
 
   List<Usuario> usuarios = [];
-
-  // final usuarios = [
-  //   Usuario(uid: '1', nombre: 'María', email: 'test1@test.com', online: true),
-  //   Usuario(
-  //       uid: '2', nombre: 'Melissa', email: 'test2@test.com', online: false),
-  //   Usuario(
-  //       uid: '3', nombre: 'Fernando', email: 'test3@test.com', online: true),
-  // ];
 
   @override
   void initState() {
@@ -96,6 +89,11 @@ class _UsuariosPageState extends State<UsuariosPage> {
             color: usuario.online ? Colors.green[300] : Colors.red,
             borderRadius: BorderRadius.circular(100)),
       ),
+      onTap: () {
+        final chatService = Provider.of<ChatService>(context, listen: false);
+        chatService.usuarioPara = usuario;
+        Navigator.pushNamed(context, 'chat');
+      },
     );
   }
 
